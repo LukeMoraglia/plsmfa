@@ -1,0 +1,27 @@
+Package: plsmfa
+Type: Package
+Title: Partial Least Squares Multiple Factor Analysis
+Version: 0.1.0
+Author: Luke Moraglia
+Maintainer: Luke Moraglia <Luke.Moraglia@utdallas.edu>
+Description: An implementation of PLSMFA, an adaptation of partial least
+    squares correlation (PLSC) that accounts for the existence of subtables in
+    the data tables. Subtables are normalized, prior to PLSC, by dividing by
+    the first singular value of the subtable. This normalization step comes from
+    multiple factor analysis (MFA).
+Encoding: UTF-8
+LazyData: true
+License: MIT + file LICENSE
+Imports:
+    ExPosition,
+    dplyr,
+    purrr,
+    data4PCCAR,
+    PTCA4CATA,
+    magrittr,
+    GSVD,
+    stats,
+    ggplot2
+RoxygenNote: 7.1.1
+Depends: 
+    R (>= 2.10)

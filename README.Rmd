@@ -1,0 +1,184 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = FALSE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  #out.width = "100%",
+  cache = FALSE,
+  warning = FALSE,
+  message = FALSE
+)
+```
+
+# plsmfa
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+`plsmfa` is a package to perform partial least squares multiple factor analysis (PLSMFA). 
+PLSMFA is an extension of partial least squares correlation (PLSC) for the case when the data contains groups of variables called subtables.
+The subtables are normalized by their first singular value, so that each contributes equally to the analysis.
+
+## Installation
+
+You can install `plsmfa` from [GitHub](https://github.com/LukeMoraglia/plsmfa) with:
+
+```{r install, eval = FALSE}
+# install.packages("devtools")
+devtools::install_github("LukeMoraglia/plsmfa")
+```
+
+This is package is still in development, with additional documentation and changes likely.
+
+`plsmfa` depends on several packages that are mostly on CRAN, but there are some packages that are available only through Github. Download them with the code below:
+
+```{r install other packages, eval = FALSE}
+# Available through GitHub
+devtools::install_github("HerveAbdi/PTCA4CATA")
+devtools::install_github("HerveAbdi/data4PCCAR")
+devtools::install_github("derekbeaton/GSVD")
+
+# Optional modified version of ExPosition
+devtools::install_github("LukeMoraglia/ExPosition1/ExPosition")
+```
+
+## Example: Simulated Data
+
+The `sim_data` contains two data tables, `X` and `Y`, which have groups of variables, stored in `X_design` and `Y_design`.
+The subtables of `X` are `SubX1` and `SubX2` and of `Y` are `SubY1` and `SubY2`. 
+ 
+```{r grab data}
+library(plsmfa)
+data("sim_data")
+X <- sim_data$X
+Y <- sim_data$Y
+X_design <- sim_data$X_design
+Y_design <- sim_data$Y_design
+
+head(X)
+head(Y)
+t(X_design)
+t(Y_design)
+```
+
+### Run ```plsmfa```
+
+```{r plsmfa}
+res_plsmfa <- plsmfa(data1 = X, 
+                     data2 = Y,
+                     column_design1 = X_design,
+                     column_design2 = Y_design,
+                     center1 = TRUE, center2 = TRUE,
+                     scale1 = "SS1", scale2 = "SS1")
+```
+
+### The cross-product matrix of the normalized data
+
+Once each subtable is normalized by its first singular value, PLSMFA computes the cross-product matrix of the normalized data tables, and decomposes this cross-product matrix using the SVD.
+We can see the cross-product matrix using:
+
+```{r normed_R, fig.asp = 1}
+X_var_color <- sim_data$X_var_color$oc
+Y_var_color <- sim_data$Y_var_color$oc
+
+normed_R <- t(res_plsmfa$normed_X) %*% res_plsmfa$normed_Y
+R_bound <- max(max(normed_R), abs(min(normed_R)))
+
+superheat::superheat(normed_R,
+                     membership.rows = X_design,
+                     membership.cols = Y_design,
+                     left.label = 'variable',
+                     bottom.label = 'variable',
+                     #the limits are changed so that the colors
+                     #can be compared with the correlation matrix
+                     heat.lim = c(-R_bound, R_bound),
+                     heat.pal = c("#67001F", "white", "#053061"),
+                     heat.pal.values = c(0, 0.4, 0.5, 0.6, 1),
+                     left.label.text.col = X_var_color,
+                     bottom.label.text.col = Y_var_color
+                     )
+```
+
+### Statistical inference
+
+The package contains permutation testing to test the eigenvalues, and bootstrap resampling to evaluate the stability of the loadings. 
+Note that if your data are large, these can take a while to run.
+
+```{r perm}
+res_perm <- perm_plsmfa(data1 = X, 
+                        data2 = Y,
+                        column_design1 = X_design,
+                        column_design2 = Y_design,
+                        center1 = TRUE, center2 = TRUE,
+                        scale1 = "SS1", scale2 = "SS1",
+                        n_iter = 1000,
+                        compact = TRUE,
+                        bootstrap_first_singval = TRUE)
+```
+
+```{r boot}
+res_boot <- boot_plsmfa(data1 = X, 
+                        data2 = Y,
+                        column_design1 = X_design,
+                        column_design2 = Y_design,
+                        center1 = TRUE, center2 = TRUE,
+                        scale1 = "SS1", scale2 = "SS1",
+                        n_iter = 1000,
+                        n_dimensions = 3,
+                        boot_ratio_threshold = 2)
+```
+
+### Some graphs
+
+#### Scree
+
+First up, check the eigenvalues.
+```{r}
+PTCA4CATA::PlotScree(ev = res_plsmfa$pls$l,
+                     p.ev = res_perm$p_eig,
+                     plotKaiser = TRUE, 
+                     alpha = 0.01)
+```
+
+The first 3 dimensions explain nearly all of the variance, and each one has $p < .01$.
+
+#### Loadings (a.k.a saliences)
+
+The loadings of the variables show their importance for a dimension (in PLSC, these loadings are also called saliences).
+We can look at the loadings as arrows on a 2D plot, where arrows with a small angle between them are positively related on these dimensions.
+Loadings for `X` are stored in `res_plsmfa$pls$u` and for `Y` in `res_plsmfa$pls$v`.
+```{r}
+X_load_12 <- loading_plot(loadings = res_plsmfa$pls$u,
+                          axis1 = 1, axis2 = 2,
+                          col_points = X_var_color,
+                          arrows = TRUE)
+
+X_load_12$plot
+```
+```{r}
+Y_load_12 <- loading_plot(loadings = res_plsmfa$pls$v,
+                          axis1 = 1, axis2 = 2,
+                          col_points = Y_var_color,
+                          arrows = TRUE)
+
+Y_load_12$plot
+```
+
+#### Latent Variables
+
+```{r}
+lv1 <- latent_variable_XY_map(res_plsmfa,
+                              lv_num = 1,
+                              design = sim_data$obs_design,
+                              col_obs = sim_data$obs_color,
+                              col_group = sim_data$group_color)
+lv1$plot
+```
+
+

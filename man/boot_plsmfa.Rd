@@ -57,10 +57,12 @@ A list that contains:
   \item{\code{sig_boot_ratios_j}}{Whether each bootstrap ratio for the J variables of \code{data2}}
 }
 \description{
-\code{boot_plsmfa} performs bootstrap resampling to generate a sampling distribution of the loadings.
-This distribution can be used to generate confidence intervals, or bootstrap ratios.
+Bootstrap methods for PLSMFA are a beta feature. They have not been systematically validated.
 }
 \details{
+\code{boot_plsmfa} performs bootstrap resampling to generate a sampling distribution of the loadings.
+This distribution can be used to generate confidence intervals, or bootstrap ratios.
+
 Bootstrap resampling is used to assess the stability of the results by simulating how the results would
 vary if the data were collected again from the same population as the sample data. It simulates this process
 by sampling the observations of the data \emph{with replacement}. This "bootstrapped sample" is analyzed
@@ -72,7 +74,7 @@ used to assess the stability of the loading. The bootstrap ratio is similar to a
 the mean of the sampling distribution divided by the standard deviation of the distribution.
 
 At present, \code{boot_plsmfa} computes bootstrap ratios, but not confidence intervals. Also, as a technical
-aside, because the SVD is prone to nuissance variance from reflection, reordering, and rotation (see Milan
+aside, because the SVD is prone to nuisance variance from reflection, reordering, and rotation (see Milan
 and Whittaker, 1995), \code{boot_plsmfa} implements a Procrustes rotation on the loadings of each iteration
 (\code{uv_boot}).
 }

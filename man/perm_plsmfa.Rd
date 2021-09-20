@@ -61,12 +61,14 @@ A list containing:
    \item{\code{perm_percent_inertia}}{the percentage of inertia explained by the dimensions of each permutation}
 }
 \description{
+Permutation methods for PLSMFA are a beta feature. They have not been systematically validated.
+}
+\details{
 The permutation test randomizes each column of the (normalized) data tables and performs PLSMFA
 on the permuted data tables. This randomization simulates the pattern expected under the null hypothesis of no relationships
 between the variables. This process repeats \code{n_iter} times to create a null distribution of the eigenvalues, from
 which probabilities for the eigenvalues, total inertia, and percentage of inertia are computed.
-}
-\details{
+
 Some additional details: PLSMFA starts off by normalizing each subtable, which changes the inertia of each subtable.
 If the original data were permuted, the first singular value of each subtable would change, and in the case of the
 unidimensional subtables, the first singular value would decrease, sometimes by a lot. When the first singular value

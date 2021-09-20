@@ -1,7 +1,7 @@
 Package: plsmfa
 Type: Package
 Title: Partial Least Squares Multiple Factor Analysis
-Version: 0.1.0
+Version: 0.1.0.9000
 Author: Luke Moraglia
 Maintainer: Luke Moraglia <Luke.Moraglia@utdallas.edu>
 Description: An implementation of PLSMFA, an adaptation of partial least

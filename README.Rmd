@@ -14,6 +14,8 @@ knitr::opts_chunk$set(
   warning = FALSE,
   message = FALSE
 )
+library(knitr)
+library(magrittr)
 ```
 
 # plsmfa
@@ -24,6 +26,7 @@ knitr::opts_chunk$set(
 `plsmfa` is a package to perform partial least squares multiple factor analysis (PLSMFA). 
 PLSMFA is an extension of partial least squares correlation (PLSC) for the case when the data contains groups of variables called subtables.
 The subtables are normalized by their first singular value, so that each contributes equally to the analysis.
+This is package is in development.
 
 ## Installation
 
@@ -34,9 +37,7 @@ You can install `plsmfa` from [GitHub](https://github.com/LukeMoraglia/plsmfa) w
 devtools::install_github("LukeMoraglia/plsmfa")
 ```
 
-This is package is still in development, with additional documentation and changes likely.
-
-`plsmfa` depends on several packages that are mostly on CRAN, but there are some packages that are available only through Github. Download them with the code below:
+`plsmfa` depends on several packages that are mostly on CRAN, but there are some packages that are available only through GitHub. Download them with the code below:
 
 ```{r install other packages, eval = FALSE}
 # Available through GitHub
@@ -61,8 +62,8 @@ Y <- sim_data$Y
 X_design <- sim_data$X_design
 Y_design <- sim_data$Y_design
 
-head(X)
-head(Y)
+head(X) %>% kable()
+head(Y) %>% kable()
 t(X_design)
 t(Y_design)
 ```
@@ -80,7 +81,7 @@ res_plsmfa <- plsmfa(data1 = X,
 
 ### The cross-product matrix of the normalized data
 
-Once each subtable is normalized by its first singular value, PLSMFA computes the cross-product matrix of the normalized data tables, and decomposes this cross-product matrix using the SVD.
+Once each subtable is normalized by its first singular value, PLSMFA computes the cross-product matrix of the normalized data tables and decomposes this cross-product matrix using the SVD.
 We can see the cross-product matrix using:
 
 ```{r normed_R, fig.asp = 1}
@@ -95,8 +96,6 @@ superheat::superheat(normed_R,
                      membership.cols = Y_design,
                      left.label = 'variable',
                      bottom.label = 'variable',
-                     #the limits are changed so that the colors
-                     #can be compared with the correlation matrix
                      heat.lim = c(-R_bound, R_bound),
                      heat.pal = c("#67001F", "white", "#053061"),
                      heat.pal.values = c(0, 0.4, 0.5, 0.6, 1),
@@ -107,7 +106,8 @@ superheat::superheat(normed_R,
 
 ### Statistical inference
 
-The package contains permutation testing to test the eigenvalues, and bootstrap resampling to evaluate the stability of the loadings. 
+The package contains permutation testing to test the eigenvalues, and bootstrap resampling to evaluate the stability of the loadings.
+These features are fully developmental, and they have not been fully validated.
 Note that if your data are large, these can take a while to run.
 
 ```{r perm}
@@ -153,7 +153,7 @@ The first 3 dimensions explain nearly all of the variance, and each one has $p <
 The loadings of the variables show their importance for a dimension (in PLSC, these loadings are also called saliences).
 We can look at the loadings as arrows on a 2D plot, where arrows with a small angle between them are positively related on these dimensions.
 Loadings for `X` are stored in `res_plsmfa$pls$u` and for `Y` in `res_plsmfa$pls$v`.
-```{r}
+```{r, fig.width=8}
 X_load_12 <- loading_plot(loadings = res_plsmfa$pls$u,
                           axis1 = 1, axis2 = 2,
                           col_points = X_var_color,
@@ -171,6 +171,11 @@ Y_load_12$plot
 ```
 
 #### Latent Variables
+
+The observations of the analysis can be plotted on latent variables (akin to principal components in PCA).
+Observations can be colored by a design variable (i.e., a categorical grouping variable) and the means of the groups can be plotted.
+Bootstrap confidence intervals of the means give an idea of how stable the group means are on the latent variables.
+
 
 ```{r}
 lv1 <- latent_variable_XY_map(res_plsmfa,

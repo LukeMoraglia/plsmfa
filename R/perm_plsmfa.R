@@ -1,5 +1,7 @@
 #' Permutation tests for the eigenvalues of PLSMFA
-#'
+#' 
+#' Permutation methods for PLSMFA are a beta feature. They have not been systematically validated.
+#' 
 #' The permutation test randomizes each column of the (normalized) data tables and performs PLSMFA
 #' on the permuted data tables. This randomization simulates the pattern expected under the null hypothesis of no relationships
 #' between the variables. This process repeats \code{n_iter} times to create a null distribution of the eigenvalues, from
